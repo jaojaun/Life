@@ -19,6 +19,14 @@
     "ios": {
       "supportsTablet": true
     },
+    "android":{
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-1684420797820852~7205633370"
+      },
+      "package": "br.com.rpglife",
+      "versionCode": 1,
+      "googleServicesFile": "./google-services.json"
+    },
     "web": {
       "favicon": "./assets/favicon.png"
     }

@@ -1,66 +1,132 @@
 import * as React from 'react';
-import { View, StyleSheet, Text, ImageBackground, } from 'react-native';
-import { Button, Input } from 'react-native-elements';
+import { View, Text, ImageBackground, StyleSheet, TouchableNativeFeedbackBase, ToastAndroid } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { Input, Button } from 'react-native-elements';
+import { InputRound } from './components';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
+import { useNavigation, useRoute } from '@react-navigation/core';
+import Cadastro from './components';
+import { AdMobBanner,AdMobInterstitial,AdMobRewarded } from 'expo-ads-admob';
 
-export interface LoginProps {}
+export interface LoginScreenProps {}
 
-export default function LoginFuncaoScreen(props: LoginProps) {
-    return (<ImageBackground source={require('./../../../assets/imgs/background.png')}
-            style={styles.background}>
+export default function LoginScreen (props: LoginScreenProps) {
 
-        <View style={styles.container}>
-            <Text style={styles.logo}>APP - F</Text>
+    const nav = useNavigation()
+    const [ erro, setErro ] = React.useState('')
+    //const ( invisivel, setInvisivel) = React.useState(true);
+    //Para visualização da senha! /\
 
-            <Input placeholder='Digite seu e-mail'  
-                leftIcon={{name:'person', color:'white'}}
-                placeholderTextColor="white"
-                inputContainerStyle={styles.containerInput}
-                inputStyle={{color:'white'}}
-            />
+    //Função de logar
+    const logar = async ({email, senha}:any) => {
+        setErro('')
+        await new Promise((resolve) => setTimeout(() => resolve(' '), 1000))
 
-            <Input placeholder='Digite sua senha' 
-                leftIcon={{name:'lock', color:'white'}}
-                placeholderTextColor="white"
-                inputContainerStyle={styles.containerInput}
-                inputStyle={{color:'white'}}
-            secureTextEntry={true} />
+        console.log('email', email);
+        console.log('senha', senha);
+        if (email.trim() == 'teste@teste.com' && senha == '123456')
+            nav.navigate('home', {screen: 'listar'})
+        else    
+            setErro('Email ou senha incorreta')
+    }
 
-            <Button title="Logar"  buttonStyle={{borderRadius:30}} raised={true} />
 
-            <Text style={styles.cadastrar}>Não possui conta? Clique aqui para se cadastrar</Text>
 
-        </View>
+    return (
+        <ImageBackground source={require('./../../../assets/imgs/background.png')}
+        style={styles.background}>
 
-    </ImageBackground>)       
+            <Formik 
+                initialValues={{ email:'' , senha: '' }}
+                validationSchema = {Yup.object().shape({
+                    email: Yup.string().required('O campo email é obrigatório')
+                        .email('O campo precisa ser um email válido'),
+                    senha: Yup.string().required('O campo senha é obrigatório')
+                        .min(6, 'A senha precisa ter no minimo 6 caracteres')
+                })}
+                onSubmit={logar}
+            >
+                {({handleChange, handleSubmit, errors, isSubmitting, touched, handleBlur}) => (
+                    <View style={styles.container}>
+                        <Text style={styles.logo }>RPGLife</Text>
+                        
+                        <InputRound 
+                            icone="person" 
+                            placeholder="Digite Seu E-mail!"
+                            onBlur={() => {
+                                handleBlur('email')
+                                if (errors.email) {
+                                    ToastAndroid.show(errors.email, 2000)
+                                }
+                            }}
+                            onChangeText={handleChange('email')}
+                        />
+                        {touched.email && <Text style={styles.erro}>{errors.email}</Text>}
+                        <InputRound 
+                            icone="lock" 
+                            placeholder="Digite sua Senha!" 
+                            senha={true}
+                            onBlur={() => {
+                                handleBlur('senha')
+                                if (errors.senha) {
+                                    ToastAndroid.show(errors.senha, 2000)
+                                }
+                            }}
+                            onChangeText={handleChange('senha')}
+                            
+                        />
+                        {touched.senha && <Text style={styles.erro}>{errors.senha}</Text>}
+                        
+                        <Text style={styles.erroLogin}>{erro}</Text>
+                        <Button title="Logar" loading={isSubmitting} disabled={isSubmitting} onPress={() => handleSubmit()}
+                            buttonStyle={{borderRadius: 25}} raised={false}/>
+                        <Cadastro/>
+                        <AdMobBanner
+                            adUnitID="ca-app-pub-3940256099942544/6300978111"
+                            bannerSize="leaderboard"
+                        />
+                    </View>
+                )}
+            </Formik>
+
+        </ImageBackground>
+    );
 }
-    
+
 const styles = StyleSheet.create({
+    erroLogin: {
+        textAlign:'center',
+        fontSize: 20,
+        color: 'red',
+        marginTop: -30
+    },
     background: {
         width: '100%',
         height: '100%'
     },
+    erro: {
+        color: 'black',
+        marginTop: 10,
+        textAlign: 'right',
+        marginRight: 30,
+        marginBottom: 10,
+        fontSize: 15
+    },
     container: {
         flex:1,
         padding: 10,
+        marginTop: 160,
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'stretch',
     },
-    btnRound: {
-        borderRadius:30,
-    },
-    logo: {
-        color: 'white',
+    logo: { 
+        color: 'black', 
         fontSize: 50,
-        textAlign: 'center',
+        textAlign:'center'
     },
-    containerInput: {
-        backgroundColor: 'rgba(255,255,255,0.3)',
-        borderRadius: 30,
-        padding: 5,
-        marginBottom: 5,
-    },
-    cadastrar: {
+    cadastreSe: {
         color: 'white',
         fontSize: 20,
         textDecorationLine: 'underline',
@@ -68,3 +134,4 @@ const styles = StyleSheet.create({
         textAlign: 'center'
     }
 });
+
